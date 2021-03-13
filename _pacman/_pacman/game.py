@@ -4,6 +4,7 @@ import game_functions as gf
 from settings import Settings
 import time
 
+ # class for the maze
 
 class Maze:
     def __init__(self, game):
@@ -15,7 +16,7 @@ class Maze:
     def update(self): self.draw()
     def draw(self): self.screen.blit(self.image, self.rect)
 
-
+# class for the character
 class Characters:
     def __init__(self, game):
         self.screen = game.screen
@@ -28,6 +29,7 @@ class Characters:
         self.ship_rect = self.ship_image.get_rect()
         self.alien_rect = self.alien_image.get_rect()
 
+#updates movement  every frame
     def update(self, event, ship):
         # TODO:  update position
         r = self.screen_rect
@@ -43,7 +45,7 @@ class Characters:
         self.screen.blit(self.ship_image, self.ship_rect)
         self.screen.blit(self.alien_image, self.alien_rect)
 
-
+# creates all the variables for the game
 class Game:
     def __init__(self):
         pg.init()
@@ -58,6 +60,8 @@ class Game:
 
     def to_pixel(self, grid):
         pixels = []
+
+# creates the grid in a theoretical sense, the grid points havent been create yet
 
     def create_grid(self):
         row0 = [0, 4, 6, 10]
@@ -78,6 +82,8 @@ class Game:
             i += 1
         return rows
 
+
+# play function calls the events to update the maze and characters
     def play(self):
         while not self.finished:
             gf.check_events(game=self)
@@ -88,6 +94,7 @@ class Game:
             pg.display.flip()
 
 
+# main game function
 def main():
     game = Game()
     game.play()

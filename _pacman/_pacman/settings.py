@@ -1,6 +1,7 @@
 class Settings():
     """A class to store all settings for PacMan."""
 
+#init fucntion to create the game screen
     def __init__(self):
         """Initialize the game's settings."""
         self.screen_width = 910

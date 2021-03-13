@@ -1,11 +1,13 @@
 import sys
 import pygame as pg
 
+#checks for key down events
 def check_keydown_events(event, ship, sound):
     if event.key == pg.K_RIGHT: ship.moving_right = True
     elif event.key == pg.K_LEFT: ship.moving_left = True
     # elif event.key == pg.K_SPACE: ship.shooting_bullets = True
 
+#checks for key up events
 def check_keyup_events(event, ship):
     if event.key == pg.K_RIGHT: ship.moving_right = False
     elif event.key == pg.K_LEFT: ship.moving_left = False
