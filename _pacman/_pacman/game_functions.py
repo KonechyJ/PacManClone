@@ -1,6 +1,6 @@
 import sys
 import pygame as pg
-
+#hello Kyle Woo
 #checks for key down events
 def check_keydown_events(event, ship, sound):
     if event.key == pg.K_RIGHT: ship.moving_right = True
@@ -26,4 +26,3 @@ def check_events(game):
         #     # check_play_button(stats=game.stats, play_button=game.play_button, mouse_x=mouse_x, mouse_y=mouse_y)
         # elif event.type == pg.KEYDOWN: check_keydown_events(event=event, ship=game.ship, sound=game.sound)
         # elif event.type == pg.KEYUP: check_keyup_events(event=event, ship=game.ship)
-
