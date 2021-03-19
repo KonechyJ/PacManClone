@@ -1,11 +1,11 @@
 #this is the main game file
 import pygame
-from pygame.locls import *
+from pygame.locals import *
 from constants import *
 
 #class to control the game
 class GameController(object):
-    def __int__(self):
+    def __init__(self):
         #This lines simple set up the game window for the game
         pygame.init()
         self.screen = pygame.display.set_mode(sceenSize, 0, 32)
@@ -21,7 +21,7 @@ class GameController(object):
     def startGame(self):
         pass
     #update is called once per frame, so it will act as our game loop
-    def upadte(self):
+    def update(self):
         self.checkEvents()
         self.render()
 
@@ -36,7 +36,7 @@ class GameController(object):
         pygame.display.update()
 
 if __name__ == "__main__":
-    game =GameController()
+    game = GameController()
     game.startGame()
     while True:
-        game.upadte()
+        game.update()
