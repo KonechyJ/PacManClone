@@ -2,6 +2,7 @@
 import pygame
 from pygame.locals import *
 from constants import *
+from pacman import Pacman
 
 #class to control the game
 class GameController(object):
@@ -11,6 +12,7 @@ class GameController(object):
         self.screen = pygame.display.set_mode(sceenSize, 0, 32)
         self.background = None
         self.setBackground()
+        self.clock = pygame.time.Clock()
 
     #this function fills the background with black
     def setBackground(self):
@@ -19,9 +21,15 @@ class GameController(object):
 
     #This functions starts the game
     def startGame(self):
-        pass
+        #creates the pacman game object
+        self.pacman = Pacman()
+
+
     #update is called once per frame, so it will act as our game loop
     def update(self):
+        #line is setting a 30 second value to Dt(delta time)
+        dt = self.clock.tick(30) / 1000.0
+        self.pacman.update(dt)
         self.checkEvents()
         self.render()
 
@@ -33,6 +41,8 @@ class GameController(object):
 
     #this function will be used to draw images to the screen
     def render(self):
+        self.screen.blit(self.background, (0, 0))
+        self.pacman.render(self.screen)
         pygame.display.update()
 
 if __name__ == "__main__":
