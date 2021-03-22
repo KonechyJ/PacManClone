@@ -3,6 +3,7 @@ import pygame
 from pygame.locals import *
 from constants import *
 from pacman import Pacman
+from nodes import NodeGroup
 
 #class to control the game
 class GameController(object):
@@ -21,8 +22,10 @@ class GameController(object):
 
     #This functions starts the game
     def startGame(self):
+        self.nodes = NodeGroup()
+        self.nodes.setupTestNodes()
         #creates the pacman game object
-        self.pacman = Pacman()
+        self.pacman = Pacman(self.nodes)
 
 
     #update is called once per frame, so it will act as our game loop
@@ -35,13 +38,16 @@ class GameController(object):
 
     #This functions checks for specific events to trigger something
     def checkEvents(self):
+        #runs a loop to check every second if the game has exited and if a  key is pressed.
         for event in pygame.event.get():
             if event.type == QUIT:
                 exit()
 
+
     #this function will be used to draw images to the screen
     def render(self):
         self.screen.blit(self.background, (0, 0))
+        self.nodes.render(self.screen)
         self.pacman.render(self.screen)
         pygame.display.update()
 
