@@ -15,7 +15,7 @@ class Stack(object):
         self.items = []
 
     #adds an item to the end of the list
-    def push(self):
+    def push(self, item):
         self.items.append(item)
 
     #removes an item from the end of the list (or the top of it)

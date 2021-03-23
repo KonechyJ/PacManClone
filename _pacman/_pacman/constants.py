@@ -15,7 +15,7 @@ nRows = 36   #rows
 nCols = 28   #colums
 screenWidth = nCols*tileWidth
 screenHeight = nRows*tileHeight
-sceenSize =(screenWidth, screenHeight)
+sceenSize = (screenWidth, screenHeight)
 
 #COLORS
 BLACK = (0, 0, 0)

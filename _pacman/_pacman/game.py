@@ -4,6 +4,7 @@ from pygame.locals import *
 from constants import *
 from pacman import Pacman
 from nodes import NodeGroup
+from pellets import PelletGroup
 
 #class to control the game
 class GameController(object):
@@ -23,6 +24,7 @@ class GameController(object):
     #This functions starts the game
     def startGame(self):
         self.nodes = NodeGroup("maze1.txt")
+        self.pellets = PelletGroup("pellets1.txt")
         #creates the pacman game object
         self.pacman = Pacman(self.nodes)
 
@@ -32,6 +34,7 @@ class GameController(object):
         #line is setting a 30 second value to Dt(delta time)
         dt = self.clock.tick(30) / 1000.0
         self.pacman.update(dt)
+        self.pellets.update(dt)
         self.checkEvents()
         self.render()
 
@@ -47,6 +50,7 @@ class GameController(object):
     def render(self):
         self.screen.blit(self.background, (0, 0))
         self.nodes.render(self.screen)
+        self.pellets.render(self.screen)
         self.pacman.render(self.screen)
         pygame.display.update()
 

@@ -8,7 +8,7 @@ from constants import *
 class Pacman(object):
     def __init__(self, nodes):
         #variables to set his name, color, speed, size, and location
-        self.name = "Pacman"
+        self.name = "pacman"
         self.direction = STOP
         self.speed = 100
         self.radius = 10
@@ -59,10 +59,13 @@ class Pacman(object):
             # checks to see if the target has overshot
             if self.overshotTarget():
                 self.node = self.target
-                # sets the current target node along with the direction
-                if self.direction != direction:
-                    self.setPosition()
-                    self.direction = direction
+                self.portal()
+                if self.node.neighbors[direction] is not None:
+                    self.target = self.node.neighbors[direction]
+                    # sets the current target node along with the direction
+                    if self.direction != direction:
+                        self.setPosition()
+                        self.direction = direction
             # sets the next neighbors as current as long as a neighbor exists
             else:
                 if self.node.neighbors[self.direction] is not None:
@@ -71,11 +74,12 @@ class Pacman(object):
                     self.setPosition()
                     self.direction = STOP
 
+    #Simple function to tell pacman what to do on a portal on node
+    def portal(self):
+        if self.node.portalNode:
+            self.node = self.node.portalNode
+            self.setPosition()
 
-     #Draws pacman to the screen
-    def render(self, screen):
-        p = self.position.asInt()
-        pygame.draw.circle(screen, self.color, p, self.radius)
 
     #this function is designed to stop pacman from over shooting nodes
     def overshotTarget(self):
@@ -106,8 +110,14 @@ class Pacman(object):
         if self.direction is not STOP:
             if self.overshotTarget():
                 self.node = self.target
+                self.portal()
                 if self.node.neighbors[self.direction] is not None:
                     self.target = self.node.neighbors[self.direction]
                 else:
                     self.setPosition()
                     self.direction = STOP
+
+     #Draws pacman to the screen
+    def render(self, screen):
+        p = self.position.asInt()
+        pygame.draw.circle(screen, self.color, p, self.radius)

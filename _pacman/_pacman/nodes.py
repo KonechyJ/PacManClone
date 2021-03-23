@@ -11,6 +11,9 @@ class Node(object):
         self.position = Vector2(column*tileWidth, row*tileHeight)
         #this dictionary is to store the next nodes pacman can go to
         self.neighbors = {UP: None, DOWN: None, LEFT: None, RIGHT: None}
+        #variables for the side portals
+        self.portalNode = None
+        self.portalVal = 0
 
     #this render will draw the nodes to the screen
     def render(self, screen):
@@ -25,13 +28,15 @@ class Node(object):
 
 #This class simple creates an object to hold all the nodes
 class NodeGroup(object):
-    #this function defines the level and maze that will be created
     def __init__(self, level):
         self.nodeList = []
         self.level = level
         self.grid = None
         self.nodeStack = Stack()
+        self.portalSymbols = ["1"]
+        self.nodeSymbols = ["+"] + self.portalSymbols
         self.createNodeList(level, self.nodeList)
+        self.setupPortalNodes()
 
     #this function will read in the text file to create the ,maze
     def readMazeFile(self, textfile):
@@ -68,8 +73,11 @@ class NodeGroup(object):
         nodeFound = False
         for row in range(rows):
             for col in range(cols):
-                if self.grid[row][col] == "+":
-                    return Node(row, col)
+                if self.grid[row][col] in self.nodeSymbols:
+                    node = Node(row, col)
+                    if self.grid[row][col] in self.portalSymbols:
+                        node.portalVal = self.grid[row][col]
+                    return node
         return None
 
     #This function will look for a specific node at x & y, and returns the node object if it exists
@@ -125,10 +133,11 @@ class NodeGroup(object):
             return self.pathToFollow(DOWN, row, col, "|")
         else:
             return None
-    #this function on the other hand, follows the path like above, only now it returns the grid point if anode is found
+    #this function on the other hand, follows the path like above, only now it returns the grid point if a node is found
     def pathToFollow(self, direction, row, col, path):
-        if self.grid[row][col] == path or self.grid[row][col] == "+":
-            while self.grid[row][col] != "+":
+        tempSymbols = [path]+self.nodeSymbols
+        if self.grid[row][col] in tempSymbols:
+            while self.grid[row][col] not in self.nodeSymbols:
                 if direction is LEFT:
                     col -= 1
                 elif direction is RIGHT:
@@ -137,11 +146,28 @@ class NodeGroup(object):
                     row -= 1
                 elif direction is DOWN:
                     row += 1
-            return Node(row, col)
+            node = Node(row, col)
+            if self.grid[row][col] in self.portalSymbols:
+                node.portalVal = self.grid[row][col]
+            return node
         else:
             return None
 
-     #renders the nodes to the screen
+    #This function loops through the list of nodes, finds the two portals, and links them togther
+    def setupPortalNodes(self):
+        portalDict = {}
+        for i in range(len(self.nodeList)):
+            if self.nodeList[i].portalVal != 0:
+                if self.nodeList[i].portalVal not in portalDict.keys():
+                    portalDict[self.nodeList[i].portalVal] = [i]
+                else:
+                    portalDict[self.nodeList[i].portalVal] += [i]
+        for key in portalDict.keys():
+            node1, node2 = portalDict[key]
+            self.nodeList[node1].portalNode = self.nodeList[node2]
+            self.nodeList[node2].portalNode = self.nodeList[node1]
+
+    #renders the nodes to the screen
     def render(self, screen):
         for node in self.nodeList:
             node.render(screen)
