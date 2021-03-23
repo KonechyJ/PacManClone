@@ -22,8 +22,7 @@ class GameController(object):
 
     #This functions starts the game
     def startGame(self):
-        self.nodes = NodeGroup()
-        self.nodes.setupTestNodes()
+        self.nodes = NodeGroup("maze1.txt")
         #creates the pacman game object
         self.pacman = Pacman(self.nodes)
 
