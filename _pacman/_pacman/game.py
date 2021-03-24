@@ -5,6 +5,7 @@ from constants import *
 from pacman import Pacman
 from nodes import NodeGroup
 from pellets import PelletGroup
+from ghosts import Ghost
 
 #class to control the game
 class GameController(object):
@@ -27,6 +28,7 @@ class GameController(object):
         self.pellets = PelletGroup("pellets1.txt")
         #creates the pacman game object
         self.pacman = Pacman(self.nodes)
+        self.ghost = Ghost(self.nodes)
 
 
     #update is called once per frame, so it will act as our game loop
@@ -34,7 +36,9 @@ class GameController(object):
         #line is setting a 30 second value to Dt(delta time)
         dt = self.clock.tick(30) / 1000.0
         self.pacman.update(dt)
+        self.ghost.update(dt, self.pacman)
         self.pellets.update(dt)
+        self.checkPelletEvents()
         self.checkEvents()
         self.render()
 
@@ -45,6 +49,13 @@ class GameController(object):
             if event.type == QUIT:
                 exit()
 
+    #This method will handle will handle all the pellet events
+    #we are sending the whole pellet list to pacman and he returns the pellets he collides with
+    def checkPelletEvents(self):
+        pellet = self.pacman.eatPellets(self.pellets.pelletList)
+        if pellet:
+            self.pellets.pelletList.remove(pellet)
+
 
     #this function will be used to draw images to the screen
     def render(self):
@@ -52,6 +63,7 @@ class GameController(object):
         self.nodes.render(self.screen)
         self.pellets.render(self.screen)
         self.pacman.render(self.screen)
+        self.ghost.render(self.screen)
         pygame.display.update()
 
 if __name__ == "__main__":
