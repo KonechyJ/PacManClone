@@ -52,11 +52,18 @@ class Pacman(Entity):
                 self.node = self.target
                 self.portal()
                 if self.node.neighbors[direction] is not None:
-                    self.target = self.node.neighbors[direction]
-                    # sets the current target node along with the direction
-                    if self.direction != direction:
-                        self.setPosition()
-                        self.direction = direction
+                    if self.node.homeEntrance:
+                        if self.node.neighbors[self.direction] is not None:
+                            self.target = self.node.neighbors[self.direction]
+                        else:
+                            self.setPosition()
+                            self.direction = STOP
+                    else:
+                        self.target = self.node.neighbors[direction]
+                        # sets the current target node along with the direction
+                        if self.direction != direction:
+                            self.setPosition()
+                            self.direction = direction
             # sets the next neighbors as current as long as a neighbor exists
             else:
                 if self.node.neighbors[self.direction] is not None:
@@ -64,6 +71,17 @@ class Pacman(Entity):
                 else:
                     self.setPosition()
                     self.direction = STOP
+
+    #This method lets us know if we have collided with a ghost
+    #it does this by checking the distance is less than the radius of the ghost
+    def eatGhost(self, ghosts):
+        for ghost in ghosts:
+            d = self.position - ghost.position
+            dSquared = d.magnitudeSquared()
+            rSquared = (self.collideRadius + ghost.collideRadius) **2
+            if dSquared <= rSquared:
+                return ghost
+        return None
 
 
     #THis method will handle the funtionality for eating pellets

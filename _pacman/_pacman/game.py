@@ -5,7 +5,7 @@ from constants import *
 from pacman import Pacman
 from nodes import NodeGroup
 from pellets import PelletGroup
-from ghosts import Ghost
+from ghosts import GhostGroup
 
 #class to control the game
 class GameController(object):
@@ -28,7 +28,7 @@ class GameController(object):
         self.pellets = PelletGroup("pellets1.txt")
         #creates the pacman game object
         self.pacman = Pacman(self.nodes)
-        self.ghost = Ghost(self.nodes)
+        self.ghosts = GhostGroup(self.nodes)
 
 
     #update is called once per frame, so it will act as our game loop
@@ -36,9 +36,10 @@ class GameController(object):
         #line is setting a 30 second value to Dt(delta time)
         dt = self.clock.tick(30) / 1000.0
         self.pacman.update(dt)
-        self.ghost.update(dt, self.pacman)
+        self.ghosts.update(dt, self.pacman)
         self.pellets.update(dt)
         self.checkPelletEvents()
+        self.checkGhostEvents()
         self.checkEvents()
         self.render()
 
@@ -55,6 +56,15 @@ class GameController(object):
         pellet = self.pacman.eatPellets(self.pellets.pelletList)
         if pellet:
             self.pellets.pelletList.remove(pellet)
+            if pellet.name == "powerpellet":
+                self.ghosts.freightMode()
+
+    #checks to see if pacman has hit a ghost, and if the ghost is in fright mode, then returns home at double the speed
+    def checkGhostEvents(self):
+        ghost = self.pacman.eatGhost(self.ghosts)
+        if ghost is not None:
+            if ghost.mode.name == "FREIGHT":
+                ghost.spawnMode(speed=2)
 
 
     #this function will be used to draw images to the screen
@@ -63,7 +73,7 @@ class GameController(object):
         self.nodes.render(self.screen)
         self.pellets.render(self.screen)
         self.pacman.render(self.screen)
-        self.ghost.render(self.screen)
+        self.ghosts.render(self.screen)
         pygame.display.update()
 
 if __name__ == "__main__":
