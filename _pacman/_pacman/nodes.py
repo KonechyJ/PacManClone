@@ -17,6 +17,13 @@ class Node(object):
         self.homeGuide = False
         self.homeEntrance = False
         self.spawnNode = False
+        self.pacmanStartNode = False
+        self.blinkyStartNode = False
+        self.pinkyStartNode = False
+        self.inkyStartNode = False
+        self.clydeStartNode = False
+        self.fruitStartNode = False
+
 
     #this render will draw the nodes to the screen
     def render(self, screen):
@@ -37,7 +44,7 @@ class NodeGroup(object):
         self.level = level
         self.nodeStack = Stack()
         self.portalSymbols = ["1"]
-        self.nodeSymbols = ["+", "H", "S"] + self.portalSymbols
+        self.nodeSymbols = ["+", "H", "S", "P", "B", "I", "C", "F"] + self.portalSymbols
         self.grid = self.readMazeFile(level)
         self.homegrid = self.getHomeArray()
         self.createNodeList(self.grid, self.nodeList)
@@ -86,6 +93,8 @@ class NodeGroup(object):
             for col in range(cols):
                 if grid[row][col] in self.nodeSymbols:
                     node = Node(row, col)
+                    if grid[row][col] == "B":
+                        node.blinkyStartNode = True
                     if grid[row][col] in self.portalSymbols:
                         node.portalVal = grid[row][col]
                     return node
@@ -158,10 +167,19 @@ class NodeGroup(object):
                 elif direction is DOWN:
                     row += 1
             node = Node(row, col)
+            #assigning each of the nodes in the groupNode a specific job
             if grid[row][col] == "H":
                 node.homeGuide = True
             if grid[row][col] == "S":
-                node.spawnNode = True
+                node.pinkyStartNode = True
+            if grid[row][col] == "P":
+                node.pacmanStartNode = True
+            if grid[row][col] == "I":
+                node.inkyStartNode = True
+            if grid[row][col] == "C":
+                node.clydeStartNode = True
+            if grid[row][col] == "F":
+                node.fruitStartNode = True
             if grid[row][col] in self.portalSymbols:
                 node.portalVal = grid[row][col]
             return node
@@ -184,10 +202,10 @@ class NodeGroup(object):
 
     #this function defines the nodes used to house the ghost when spawned
     def getHomeArray(self):
-        return [['0', '0', '+', '0', '0'],
+        return [['0', '0', 'B', '0', '0'],
                 ['0', '0', '|', '0', '0'],
                 ['+', '0', '|', '0', '+'],
-                ['+', '-', 'S', '-', '+'],
+                ['I', '-', 'S', '-', 'C'],
                 ['+', '0', '0', '0', '+']]
 
     #This function move the home nodes to near the home guide node, then adds the nodes to node list

@@ -12,6 +12,21 @@ class Pacman(Entity):
         Entity.__init__(self, nodes)
         self.name = "pacman"
         self.color = YELLOW
+        self.setStartPosition()
+
+    #Checks the nodes in node list, and when it finds pacmans start node, it returns it
+    def findStartNode(self):
+        for node in self.nodes.nodeList:
+            if node.pacmanStartNode:
+                return node
+
+    #sets all of pacmans starting features (IE his staring direction, his starting node, his next immediate target, etc..)
+    def setStartPosition(self):
+        self.direction = LEFT
+        self.node = self.findStartNode()
+        self.target = self.node.neighbors[self.direction]
+        self.setPosition()
+        self.position.x -= (self.node.position.x - self.target.position.x) / 2
 
     #This update function we calculate Pacman's postion
     def update(self, dt):
@@ -83,6 +98,15 @@ class Pacman(Entity):
                 return ghost
         return None
 
+
+    #Uses the same collisson tatics to check and see if pacman has eaten the fruit
+    def eatFruit(self, fruit):
+        d = self.position - fruit.position
+        dSquared = d.magnitudeSquared()
+        rSquared = (self.collideRadius + fruit.collideRadius) ** 2
+        if dSquared <= rSquared:
+            return True
+        return False
 
     #THis method will handle the funtionality for eating pellets
     def eatPellets(self, pelletList):

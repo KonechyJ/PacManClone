@@ -6,6 +6,7 @@ from pacman import Pacman
 from nodes import NodeGroup
 from pellets import PelletGroup
 from ghosts import GhostGroup
+from fruit import Fruit
 
 #class to control the game
 class GameController(object):
@@ -16,6 +17,8 @@ class GameController(object):
         self.background = None
         self.setBackground()
         self.clock = pygame.time.Clock()
+        self.pelletsEaten = 0
+        self.fruit = None
 
     #this function fills the background with black
     def setBackground(self):
@@ -37,9 +40,12 @@ class GameController(object):
         dt = self.clock.tick(30) / 1000.0
         self.pacman.update(dt)
         self.ghosts.update(dt, self.pacman)
+        if self.fruit is not None:
+            self.fruit.update(dt)
         self.pellets.update(dt)
         self.checkPelletEvents()
         self.checkGhostEvents()
+        self.checkFruitEvents()
         self.checkEvents()
         self.render()
 
@@ -55,23 +61,35 @@ class GameController(object):
     def checkPelletEvents(self):
         pellet = self.pacman.eatPellets(self.pellets.pelletList)
         if pellet:
+            self.pelletsEaten += 1
+            if (self.pelletsEaten == 70 or self.pelletsEaten == 140):
+                if self.fruit is None:
+                    self.fruit = Fruit(self.nodes)
             self.pellets.pelletList.remove(pellet)
             if pellet.name == "powerpellet":
                 self.ghosts.freightMode()
 
     #checks to see if pacman has hit a ghost, and if the ghost is in fright mode, then returns home at double the speed
     def checkGhostEvents(self):
+        self.ghosts.release(self.pelletsEaten)
         ghost = self.pacman.eatGhost(self.ghosts)
         if ghost is not None:
             if ghost.mode.name == "FREIGHT":
                 ghost.spawnMode(speed=2)
 
+    #Checks if the fruit has been destroyed after pacman eats it or its time runs out
+    def checkFruitEvents(self):
+        if self.fruit is not None:
+            if self.pacman.eatFruit(self.fruit) or self.fruit.destroy:
+                self.fruit = None
 
     #this function will be used to draw images to the screen
     def render(self):
         self.screen.blit(self.background, (0, 0))
         self.nodes.render(self.screen)
         self.pellets.render(self.screen)
+        if self.fruit is not None:
+            self.fruit.render(self.screen)
         self.pacman.render(self.screen)
         self.ghosts.render(self.screen)
         pygame.display.update()

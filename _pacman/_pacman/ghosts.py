@@ -18,6 +18,10 @@ class Ghost(Entity):
         self.modeTimer = 0
         self.spawnNode = self.findSpawnNode()
         self.setGuideStack()
+        self.pelletsForRelease = 0
+        self.released = True
+        self.bannedDirections = []
+
 
     # This functions builds a list of valid directions for the ghost to use
     # then uses a for loop to fill the list below
@@ -29,7 +33,8 @@ class Ghost(Entity):
                 if key != self.direction * -1:
                     if not self.mode.name == "SPAWN":
                         if not self.node.homeEntrance:
-                            validDirections.append(key)
+                            if key not in self.bannedDirections:
+                                validDirections.append(key)
                         else:
                             if key != DOWN:
                                 validDirections.append(key)
@@ -79,8 +84,14 @@ class Ghost(Entity):
                     self.direction = self.mode.direction
                     self.target = self.node.neighbors[self.direction]
                     self.setPosition()
+
+    # This method wont change for each ghost but in each ghost class, we will customize the findStartNode() method
+    def setStartPosition(self):
+        self.node = self.findStartNode()
+        self.target = self.node
+        self.setPosition()
+
     # this function will help the ghost incase it comes to a deadend by checking the directions at a node.
-    #
     def forceBacktrack(self):
         if self.direction * -1 == UP:
             return UP
@@ -202,6 +213,14 @@ class Blinky(Ghost):
         Ghost.__init__(self, nodes)
         self.name = "blinky"
         self.color = RED
+        self.setStartPosition()
+
+    #this method finds blinkys start node and returns it
+    def findStartNode(self):
+        for node in self.nodes.nodeList:
+            if node.blinkyStartNode:
+                return node
+        return None
 
 #Pink ghost class that inherits from ghost, slightly different scatter and chase goal
 class Pinky(Ghost):
@@ -209,6 +228,7 @@ class Pinky(Ghost):
         Ghost.__init__(self, nodes)
         self.name = "pinky"
         self.color = PINK
+        self.setStartPosition()
 
     #her scatter goal is different than blinky, upper left corner of maze
     def scatterGoal(self):
@@ -218,12 +238,28 @@ class Pinky(Ghost):
     def chaseGoal(self, pacman, blinky=None):
         self.goal = pacman.position + pacman.direction * tileWidth * 4
 
+    # this method finds pinkys start node and returns it
+    def findStartNode(self):
+        for node in self.nodes.nodeList:
+            if node.pinkyStartNode:
+                return node
+        return None
+
 #cyan ghost class that inherits from ghost class
 class Inky(Ghost):
     def __init__(self, nodes):
         Ghost.__init__(self, nodes)
         self.name = "inky"
         self.color = TEAL
+        self.setStartPosition()
+        self.pelletsForRelease = 30
+        self.released = False
+        self.bannedDirections = [RIGHT]
+        self.spawnNode = self.node
+
+    #we are overwriting this method from ghost(or entity) with specific instructions for inky
+    def setGuideStack(self):
+        self.guide = [UP, RIGHT]
 
     #her scatter goal is to the bottom right corner of the maze
     def scatterGoal(self):
@@ -235,12 +271,28 @@ class Inky(Ghost):
         vec2 = (vec1 - blinky.position) * 2
         self.goal = blinky.position + vec2
 
+    # this method finds inkys start node and returns it
+    def findStartNode(self):
+        for node in self.nodes.nodeList:
+            if node.inkyStartNode:
+                return node
+        return None
+
 #last ghost class (orange) to inherit fro Ghost
 class Clyde(Ghost):
     def __init__(self, nodes):
         Ghost.__init__(self, nodes)
         self.name = "clyde"
         self.color = ORANGE
+        self.setStartPosition()
+        self.pelletsForRelease = 60
+        self.released = False
+        self.bannedDirections = [LEFT]
+        self.spawnNode = self.node
+
+    # we are overwriting this method from ghost(or entity) with specific instructions for clyde
+    def setGuideStack(self):
+        self.guide = [UP, LEFT]
 
     #scatters to the bottom left of the mazee
     def scatterGoal(self):
@@ -256,6 +308,13 @@ class Clyde(Ghost):
             self.scatterGoal()
         else:
             self.goal = pacman.position + pacman.direction * tileWidth * 4
+
+    # this method finds inkys start node and returns it
+    def findStartNode(self):
+        for node in self.nodes.nodeList:
+            if node.clydeStartNode:
+                return node
+        return None
 
 
 #class for storing all the ghosts as a group
@@ -292,6 +351,15 @@ class GhostGroup(object):
     def hide(self):
         for ghost in self:
             ghost.visible = False
+
+    #this method loops through all the ghost and releases them after their conditions have been met
+    def release(self, numPelletsEaten):
+        for ghost in self:
+            if not ghost.released:
+                if numPelletsEaten >= ghost.pelletsForRelease:
+                    ghost.bannedDirections = []
+                    ghost.spawnMode()
+                    ghost.released = True
 
     #draws them to screen
     def render(self, screen):
