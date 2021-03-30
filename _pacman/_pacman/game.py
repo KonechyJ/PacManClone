@@ -7,6 +7,7 @@ from nodes import NodeGroup
 from pellets import PelletGroup
 from ghosts import GhostGroup
 from fruit import Fruit
+from pauser import Pauser
 
 #class to control the game
 class GameController(object):
@@ -19,6 +20,7 @@ class GameController(object):
         self.clock = pygame.time.Clock()
         self.pelletsEaten = 0
         self.fruit = None
+        self.pause = Pauser(True)
 
     #this function fills the background with black
     def setBackground(self):
@@ -38,23 +40,28 @@ class GameController(object):
     def update(self):
         #line is setting a 30 second value to Dt(delta time)
         dt = self.clock.tick(30) / 1000.0
-        self.pacman.update(dt)
-        self.ghosts.update(dt, self.pacman)
-        if self.fruit is not None:
-            self.fruit.update(dt)
+        if not self.pause.paused:
+            self.pacman.update(dt)
+            self.ghosts.update(dt, self.pacman)
+            if self.fruit is not None:
+                self.fruit.update(dt)
+            self.checkPelletEvents()
+            self.checkGhostEvents()
+            self.checkFruitEvents()
+        self.pause.update(dt)
         self.pellets.update(dt)
-        self.checkPelletEvents()
-        self.checkGhostEvents()
-        self.checkFruitEvents()
         self.checkEvents()
         self.render()
 
     #This functions checks for specific events to trigger something
     def checkEvents(self):
-        #runs a loop to check every second if the game has exited and if a  key is pressed.
+        #runs a loop to check every second if the game has exited and if a key is pressed.
         for event in pygame.event.get():
             if event.type == QUIT:
                 exit()
+            elif event.type == KEYDOWN:
+                if event.key == K_SPACE:
+                    self.pause.player()
 
     #This method will handle will handle all the pellet events
     #we are sending the whole pellet list to pacman and he returns the pellets he collides with
@@ -76,12 +83,22 @@ class GameController(object):
         if ghost is not None:
             if ghost.mode.name == "FREIGHT":
                 ghost.spawnMode(speed=2)
+                self.pause.startTimer(1)
+                self.pacman.visible = False
+                ghost.visible = False
 
     #Checks if the fruit has been destroyed after pacman eats it or its time runs out
     def checkFruitEvents(self):
         if self.fruit is not None:
             if self.pacman.eatFruit(self.fruit) or self.fruit.destroy:
                 self.fruit = None
+
+    #
+    def resolveDeath(self):
+        pass
+    #
+    def resolveLevelClear(self):
+        pass
 
     #this function will be used to draw images to the screen
     def render(self):

@@ -30,6 +30,7 @@ class Pacman(Entity):
 
     #This update function we calculate Pacman's postion
     def update(self, dt):
+        self.visible = True
         self.position += self.direction*self.speed*dt
         direction = self.getValidKey()
         if direction:
