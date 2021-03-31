@@ -8,6 +8,7 @@ from pellets import PelletGroup
 from ghosts import GhostGroup
 from fruit import Fruit
 from pauser import Pauser
+from levels import LevelController
 
 #class to control the game
 class GameController(object):
@@ -21,6 +22,7 @@ class GameController(object):
         self.pelletsEaten = 0
         self.fruit = None
         self.pause = Pauser(True)
+        self.level = LevelController()
 
     #this function fills the background with black
     def setBackground(self):
@@ -29,27 +31,50 @@ class GameController(object):
 
     #This functions starts the game
     def startGame(self):
-        self.nodes = NodeGroup("maze1.txt")
-        self.pellets = PelletGroup("pellets1.txt")
+        self.level.reset()
+        levelmap = self.level.getLevel()
+        self.nodes = NodeGroup(levelmap["mazename"])
+        self.pellets = PelletGroup(levelmap["pelletname"])
         #creates the pacman game object
         self.pacman = Pacman(self.nodes)
         self.ghosts = GhostGroup(self.nodes)
+        self.pelletsEaten = 0
+        self.fruit = None
+        self.pause.force(True)
+        self.gameover = False
+
+    #Function called to start a new level only after the player has cleared the current one
+    def startLevel(self):
+        levelmap = self.level.getLevel()
+        self.setBackground()
+        self.nodes = NodeGroup(levelmap["mazename"])
+        self.pellets = PelletGroup(levelmap["pelletname"])
+        self.pacman.nodes = self.nodes
+        self.pacman.reset()
+        self.ghosts = GhostGroup(self.nodes)
+        self.pelletsEaten = 0
+        self.fruit = None
+        self.pause.force(True)
 
 
     #update is called once per frame, so it will act as our game loop
     def update(self):
         #line is setting a 30 second value to Dt(delta time)
-        dt = self.clock.tick(30) / 1000.0
-        if not self.pause.paused:
-            self.pacman.update(dt)
-            self.ghosts.update(dt, self.pacman)
-            if self.fruit is not None:
-                self.fruit.update(dt)
-            self.checkPelletEvents()
-            self.checkGhostEvents()
-            self.checkFruitEvents()
-        self.pause.update(dt)
-        self.pellets.update(dt)
+        if not self.gameover:
+            dt = self.clock.tick(30) / 1000.0
+            if not self.pause.paused:
+                self.pacman.update(dt)
+                self.ghosts.update(dt, self.pacman)
+                if self.fruit is not None:
+                    self.fruit.update(dt)
+                if self.pause.pauseType != None:
+                    self.pause.settlePause(self)
+                self.checkPelletEvents()
+                self.checkGhostEvents()
+                self.checkFruitEvents()
+
+            self.pause.update(dt)
+            self.pellets.update(dt)
         self.checkEvents()
         self.render()
 
@@ -61,7 +86,10 @@ class GameController(object):
                 exit()
             elif event.type == KEYDOWN:
                 if event.key == K_SPACE:
-                    self.pause.player()
+                    if self.gameover:
+                        self.startGame()
+                    else:
+                        self.pause.player()
 
     #This method will handle will handle all the pellet events
     #we are sending the whole pellet list to pacman and he returns the pellets he collides with
@@ -75,8 +103,13 @@ class GameController(object):
             self.pellets.pelletList.remove(pellet)
             if pellet.name == "powerpellet":
                 self.ghosts.freightMode()
+            if self.pellets.isEmpty():
+                self.pacman.visible = False
+                self.ghosts.hide()
+                self.pause.startTimer(3, "clear")
 
     #checks to see if pacman has hit a ghost, and if the ghost is in fright mode, then returns home at double the speed
+    #now also checks to see if pacman has hit a ghost
     def checkGhostEvents(self):
         self.ghosts.release(self.pelletsEaten)
         ghost = self.pacman.eatGhost(self.ghosts)
@@ -86,6 +119,10 @@ class GameController(object):
                 self.pause.startTimer(1)
                 self.pacman.visible = False
                 ghost.visible = False
+            elif ghost.mode.name == "CHASE" or ghost.mode.name == "SCATTER":
+                self.pacman.loseLife()
+                self.ghosts.hide()
+                self.pause.startTimer(3, "die")
 
     #Checks if the fruit has been destroyed after pacman eats it or its time runs out
     def checkFruitEvents(self):
@@ -93,12 +130,26 @@ class GameController(object):
             if self.pacman.eatFruit(self.fruit) or self.fruit.destroy:
                 self.fruit = None
 
-    #
+    # Checks to see if pacman is out of lives and then restarts the game fully
     def resolveDeath(self):
-        pass
-    #
+        if self.pacman.lives == 0:
+            self.gameover = True
+        else:
+            self.restartLevel()
+        self.pause.pauseType = None
+
+    # this function is called after Pauser does its victory pause then proceeds to set the next level
     def resolveLevelClear(self):
-        pass
+        self.level.nextLevel()
+        self.startLevel()
+        self.pause.pauseType = None
+
+    #This method will only reset pacman position in death, not the whole game
+    def restartLevel(self):
+        self.pacman.reset()
+        self.ghosts = GhostGroup(self.nodes)
+        self.fruit = None
+        self.pause.force(True)
 
     #this function will be used to draw images to the screen
     def render(self):
@@ -109,6 +160,7 @@ class GameController(object):
             self.fruit.render(self.screen)
         self.pacman.render(self.screen)
         self.ghosts.render(self.screen)
+        self.pacman.renderLives(self.screen)
         pygame.display.update()
 
 if __name__ == "__main__":

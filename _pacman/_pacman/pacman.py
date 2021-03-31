@@ -13,12 +13,28 @@ class Pacman(Entity):
         self.name = "pacman"
         self.color = YELLOW
         self.setStartPosition()
+        self.lives = 5
 
     #Checks the nodes in node list, and when it finds pacmans start node, it returns it
     def findStartNode(self):
         for node in self.nodes.nodeList:
             if node.pacmanStartNode:
                 return node
+
+    #resets pacman starting position
+    def reset(self):
+        self.setStartPosition()
+
+    #DEcreases the number of lives after death
+    def loseLife(self):
+        self.lives -= 1
+
+    #This function draws little pacmans at the bottom to represent lives
+    def renderLives(self, screen):
+        for i in range(self.lives - 1):
+            x = 5 + self.radius + (2 * self.radius + 5) * i
+            y = tileHeight * (nRows - 1)
+            pygame.draw.circle(screen, self.color, (x, y), self.radius)
 
     #sets all of pacmans starting features (IE his staring direction, his starting node, his next immediate target, etc..)
     def setStartPosition(self):
