@@ -5,7 +5,7 @@ from constants import *
 
 #class declaration for any object that will inherit from this class
 class Entity(object):
-    def __init__(self, nodes):
+    def __init__(self, nodes, spritesheet):
         # all the variables used in either pacman or ghost
         self.name = ""
         self.direction = STOP
@@ -18,6 +18,8 @@ class Entity(object):
         self.target = self.node
         self.setPosition()
         self.visible = True
+        self.image = None
+        self.spritesheet = spritesheet
 
     # this method copys the nodes position to pacmans/ghost position
     def setPosition(self):
@@ -71,6 +73,11 @@ class Entity(object):
     # Draws pacman/ghost to the screen
     def render(self, screen):
         if self.visible:
-            p = self.position.asInt()
-            pygame.draw.circle(screen, self.color, p, self.radius)
+            if self.image is not None:
+                p = self.position.asTuple()
+                p = (p[0] - tileWidth / 2, p[1] - tileWidth / 2)
+                screen.blit(self.image, p)
+            else:
+                p = self.position.asInt()
+                pygame.draw.circle(screen, self.color, p, self.radius)
 

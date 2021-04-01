@@ -10,6 +10,8 @@ from fruit import Fruit
 from pauser import Pauser
 from levels import LevelController
 from text import TextGroup
+from sprites import Spritesheet
+from maze import Maze
 
 #class to control the game
 class GameController(object):
@@ -25,6 +27,8 @@ class GameController(object):
         self.pause = Pauser(True)
         self.level = LevelController()
         self.text = TextGroup()
+        self.sheet = Spritesheet()
+        self.maze = Maze(self.sheet)
 
     #this function fills the background with black
     def setBackground(self):
@@ -35,11 +39,13 @@ class GameController(object):
     def startGame(self):
         self.level.reset()
         levelmap = self.level.getLevel()
+        self.maze.getMaze(levelmap["mazename"].split(".")[0])
+        self.maze.constructMaze(self.background)
         self.nodes = NodeGroup(levelmap["mazename"])
         self.pellets = PelletGroup(levelmap["pelletname"])
         #creates the pacman game object
-        self.pacman = Pacman(self.nodes)
-        self.ghosts = GhostGroup(self.nodes)
+        self.pacman = Pacman(self.nodes, self.sheet)
+        self.ghosts = GhostGroup(self.nodes, self.sheet)
         self.pelletsEaten = 0
         self.fruit = None
         self.pause.force(True)
@@ -56,7 +62,7 @@ class GameController(object):
         self.pellets = PelletGroup(levelmap["pelletname"])
         self.pacman.nodes = self.nodes
         self.pacman.reset()
-        self.ghosts = GhostGroup(self.nodes)
+        self.ghosts = GhostGroup(self.nodes, self.sheet)
         self.pelletsEaten = 0
         self.fruit = None
         self.pause.force(True)
@@ -113,7 +119,7 @@ class GameController(object):
             self.score += pellet.points
             if (self.pelletsEaten == 70 or self.pelletsEaten == 140):
                 if self.fruit is None:
-                    self.fruit = Fruit(self.nodes)
+                    self.fruit = Fruit(self.nodes, self.sheet)
             self.pellets.pelletList.remove(pellet)
             if pellet.name == "powerpellet":
                 self.ghosts.resetPoints()
@@ -169,7 +175,7 @@ class GameController(object):
     #This method will only reset pacman position in death, not the whole game
     def restartLevel(self):
         self.pacman.reset()
-        self.ghosts = GhostGroup(self.nodes)
+        self.ghosts = GhostGroup(self.nodes, self.sheet)
         self.fruit = None
         self.pause.force(True)
         self.text.showReady()
@@ -177,7 +183,7 @@ class GameController(object):
     #this function will be used to draw images to the screen
     def render(self):
         self.screen.blit(self.background, (0, 0))
-        self.nodes.render(self.screen)
+        #self.nodes.render(self.screen)
         self.pellets.render(self.screen)
         if self.fruit is not None:
             self.fruit.render(self.screen)

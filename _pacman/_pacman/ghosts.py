@@ -5,11 +5,12 @@ from vector import Vector2
 from random import randint
 from modes import Mode
 from stack import Stack
+from animation import Animation
 
 #This class will handle all ghost funtionality and will inherit from entity
 class Ghost(Entity):
-    def __init__(self, nodes):
-        Entity.__init__(self, nodes)
+    def __init__(self, nodes, spritesheet):
+        Entity.__init__(self, nodes, spritesheet)
         self.name = "ghost"
         self.goal = Vector2()
         self.points = 200
@@ -21,6 +22,8 @@ class Ghost(Entity):
         self.pelletsForRelease = 0
         self.released = True
         self.bannedDirections = []
+        self.animation = None
+        self.animations = {}
 
 
     # This functions builds a list of valid directions for the ghost to use
@@ -206,14 +209,109 @@ class Ghost(Entity):
         elif self.mode.name == "SPAWN":
             self.spawnGoal()
         self.moveBySelf()
+        self.updateAnimation(dt)
+
+    ##this function simple defines all the frames we will use the the specific animations, and puts them into easy to use categories
+    def defineAnimations(self, row):
+        anim = Animation("loop")
+        anim.speed = 10
+        anim.addFrame(self.spritesheet.getImage(0, row, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(1, row, 32, 32))
+        self.animations["up"] = anim
+
+        anim = Animation("loop")
+        anim.speed = 10
+        anim.addFrame(self.spritesheet.getImage(2, row, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(3, row, 32, 32))
+        self.animations["down"] = anim
+
+        anim = Animation("loop")
+        anim.speed = 10
+        anim.addFrame(self.spritesheet.getImage(4, row, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(5, row, 32, 32))
+        self.animations["left"] = anim
+
+        anim = Animation("loop")
+        anim.speed = 10
+        anim.addFrame(self.spritesheet.getImage(6, row, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(7, row, 32, 32))
+        self.animations["right"] = anim
+
+        anim = Animation("loop")
+        anim.speed = 10
+        anim.addFrame(self.spritesheet.getImage(0, 6, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(1, 6, 32, 32))
+        self.animations["freight"] = anim
+
+        anim = Animation("loop")
+        anim.speed = 10
+        anim.addFrame(self.spritesheet.getImage(0, 6, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(2, 6, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(1, 6, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(3, 6, 32, 32))
+        self.animations["flash"] = anim
+
+        anim = Animation("static")
+        anim.speed = 10
+        anim.addFrame(self.spritesheet.getImage(4, 6, 32, 32))
+        self.animations["spawnup"] = anim
+
+        anim = Animation("static")
+        anim.speed = 10
+        anim.addFrame(self.spritesheet.getImage(5, 6, 32, 32))
+        self.animations["spawndown"] = anim
+
+        anim = Animation("static")
+        anim.speed = 10
+        anim.addFrame(self.spritesheet.getImage(6, 6, 32, 32))
+        self.animations["spawnleft"] = anim
+
+        anim = Animation("static")
+        anim.speed = 10
+        anim.addFrame(self.spritesheet.getImage(7, 6, 32, 32))
+        self.animations["spawnright"] = anim
+
+
+    #applies the animations defined above to the various movements and moods
+    def updateAnimation(self, dt):
+        if self.mode.name == "SPAWN":
+            if self.direction == UP:
+                self.animation = self.animations["spawnup"]
+            elif self.direction == DOWN:
+                self.animation = self.animations["spawndown"]
+            elif self.direction == LEFT:
+                self.animation = self.animations["spawnleft"]
+            elif self.direction == RIGHT:
+                self.animation = self.animations["spawnright"]
+
+        if self.mode.name in ["CHASE", "SCATTER"]:
+            if self.direction == UP:
+                self.animation = self.animations["up"]
+            elif self.direction == DOWN:
+                self.animation = self.animations["down"]
+            elif self.direction == LEFT:
+                self.animation = self.animations["left"]
+            elif self.direction == RIGHT:
+                self.animation = self.animations["right"]
+
+        if self.mode.name == "FREIGHT":
+            if self.modeTimer >= (self.mode.time * 0.7):
+                self.animation = self.animations["flash"]
+            else:
+                self.animation = self.animations["freight"]
+        self.image = self.animation.update(dt)
+
 
 # class that inherits from ghost for Blinky (Red ghost) and the most simple of them all
 class Blinky(Ghost):
-    def __init__(self, nodes):
-        Ghost.__init__(self, nodes)
+    def __init__(self, nodes, spritesheet):
+        Ghost.__init__(self, nodes, spritesheet)
         self.name = "blinky"
         self.color = RED
         self.setStartPosition()
+        self.image = self.spritesheet.getImage(4, 2, 32, 32)
+        self.defineAnimations(2)
+        self.animation = self.animations["left"]
 
     #this method finds blinkys start node and returns it
     def findStartNode(self):
@@ -224,11 +322,14 @@ class Blinky(Ghost):
 
 #Pink ghost class that inherits from ghost, slightly different scatter and chase goal
 class Pinky(Ghost):
-    def __init__(self, nodes):
-        Ghost.__init__(self, nodes)
+    def __init__(self, nodes, spritesheet):
+        Ghost.__init__(self, nodes, spritesheet)
         self.name = "pinky"
         self.color = PINK
         self.setStartPosition()
+        self.image = self.spritesheet.getImage(0, 3, 32, 32)
+        self.defineAnimations(3)
+        self.animation = self.animations["up"]
 
     #her scatter goal is different than blinky, upper left corner of maze
     def scatterGoal(self):
@@ -247,8 +348,8 @@ class Pinky(Ghost):
 
 #cyan ghost class that inherits from ghost class
 class Inky(Ghost):
-    def __init__(self, nodes):
-        Ghost.__init__(self, nodes)
+    def __init__(self, nodes, spritesheet):
+        Ghost.__init__(self, nodes, spritesheet)
         self.name = "inky"
         self.color = TEAL
         self.setStartPosition()
@@ -256,6 +357,9 @@ class Inky(Ghost):
         self.released = False
         self.bannedDirections = [RIGHT]
         self.spawnNode = self.node
+        self.image = self.spritesheet.getImage(2, 4, 32, 32)
+        self.defineAnimations(4)
+        self.animation = self.animations["down"]
 
     #we are overwriting this method from ghost(or entity) with specific instructions for inky
     def setGuideStack(self):
@@ -280,8 +384,8 @@ class Inky(Ghost):
 
 #last ghost class (orange) to inherit fro Ghost
 class Clyde(Ghost):
-    def __init__(self, nodes):
-        Ghost.__init__(self, nodes)
+    def __init__(self, nodes, spritesheet):
+        Ghost.__init__(self, nodes, spritesheet)
         self.name = "clyde"
         self.color = ORANGE
         self.setStartPosition()
@@ -289,6 +393,9 @@ class Clyde(Ghost):
         self.released = False
         self.bannedDirections = [LEFT]
         self.spawnNode = self.node
+        self.image = self.spritesheet.getImage(2, 5, 32, 32)
+        self.defineAnimations(5)
+        self.animation = self.animations["down"]
 
     # we are overwriting this method from ghost(or entity) with specific instructions for clyde
     def setGuideStack(self):
@@ -319,9 +426,12 @@ class Clyde(Ghost):
 
 #class for storing all the ghosts as a group
 class GhostGroup(object):
-    def __init__(self, nodes):
+    def __init__(self, nodes, spritesheet):
         self.nodes = nodes
-        self.ghosts = [Blinky(nodes), Pinky(nodes), Inky(nodes), Clyde(nodes)]
+        self.ghosts = [Blinky(nodes, spritesheet),
+                       Pinky(nodes, spritesheet),
+                       Inky(nodes, spritesheet),
+                       Clyde(nodes, spritesheet)]
 
     #function to let us loop through all the ghosts in the list
     def __iter__(self):

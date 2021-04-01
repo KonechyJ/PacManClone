@@ -3,17 +3,24 @@ from pygame.locals import*
 from vector import Vector2
 from constants import *
 from entity import Entity
+from animation import Animation
 
 
 #Pacman class
 class Pacman(Entity):
-    def __init__(self, nodes):
+    def __init__(self, nodes, spritesheet):
         #variables to set his name, color
-        Entity.__init__(self, nodes)
+        Entity.__init__(self, nodes, spritesheet)
         self.name = "pacman"
         self.color = YELLOW
         self.setStartPosition()
         self.lives = 5
+        self.startImage = self.spritesheet.getImage(4, 0, 32, 32)
+        self.image = self.startImage
+        self.animation = None
+        self.animations = {}
+        self.defineAnimations()
+        self.lifeicons = self.spritesheet.getImage(0, 1, 32, 32)
 
     #Checks the nodes in node list, and when it finds pacmans start node, it returns it
     def findStartNode(self):
@@ -24,6 +31,7 @@ class Pacman(Entity):
     #resets pacman starting position
     def reset(self):
         self.setStartPosition()
+        self.image = self.startImage
 
     #DEcreases the number of lives after death
     def loseLife(self):
@@ -32,9 +40,9 @@ class Pacman(Entity):
     #This function draws little pacmans at the bottom to represent lives
     def renderLives(self, screen):
         for i in range(self.lives - 1):
-            x = 5 + self.radius + (2 * self.radius + 5) * i
-            y = tileHeight * (nRows - 1)
-            pygame.draw.circle(screen, self.color, (x, y), self.radius)
+            x = 10 + 42 * i
+            y = tileHeight * nRows - 32
+            screen.blit(self.lifeicons, (x, y))
 
     #sets all of pacmans starting features (IE his staring direction, his starting node, his next immediate target, etc..)
     def setStartPosition(self):
@@ -48,6 +56,7 @@ class Pacman(Entity):
     def update(self, dt):
         self.visible = True
         self.position += self.direction*self.speed*dt
+        self.updateAnimation(dt)
         direction = self.getValidKey()
         if direction:
             self.moveByKey(direction)
@@ -137,4 +146,71 @@ class Pacman(Entity):
                 return pellet
         return None
 
-    
+    #this function simple defines all the frames we will use the the specific animations, and puts them into easy to use categories
+    def defineAnimations(self):
+        anim = Animation("loop")
+        anim.speed = 30
+        anim.addFrame(self.spritesheet.getImage(4, 0, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(0, 0, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(0, 1, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(0, 0, 32, 32))
+        self.animations["left"] = anim
+
+        anim = Animation("loop")
+        anim.speed = 30
+        anim.addFrame(self.spritesheet.getImage(4, 0, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(1, 0, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(1, 1, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(1, 0, 32, 32))
+        self.animations["right"] = anim
+
+        anim = Animation("loop")
+        anim.speed = 30
+        anim.addFrame(self.spritesheet.getImage(4, 0, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(2, 0, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(2, 1, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(2, 0, 32, 32))
+        self.animations["down"] = anim
+
+        anim = Animation("loop")
+        anim.speed = 30
+        anim.addFrame(self.spritesheet.getImage(4, 0, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(3, 0, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(3, 1, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(3, 0, 32, 32))
+        self.animations["up"] = anim
+
+        anim = Animation("once")
+        anim.speed = 10
+        anim.addFrame(self.spritesheet.getImage(0, 7, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(1, 7, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(2, 7, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(3, 7, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(4, 7, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(5, 7, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(6, 7, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(7, 7, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(8, 7, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(9, 7, 32, 32))
+        anim.addFrame(self.spritesheet.getImage(10, 7, 32, 32))
+        self.animations["death"] = anim
+
+        anim = Animation("static")
+        anim.addFrame(self.spritesheet.getImage(4, 0, 32, 32))
+        self.animations["idle"] = anim
+
+    #applies the animations defined above to the various movements
+    #TODO possibly could add the moveement sounds here
+    def updateAnimation(self, dt):
+        if self.direction == UP:
+            self.animation = self.animations["up"]
+        elif self.direction == DOWN:
+            self.animation = self.animations["down"]
+        elif self.direction == LEFT:
+            self.animation = self.animations["left"]
+        elif self.direction == RIGHT:
+            self.animation = self.animations["right"]
+        elif self.direction == STOP:
+            self.animation = self.animations["idle"]
+        self.image = self.animation.update(dt)
+

@@ -4,8 +4,8 @@ from constants import *
 
 #this class is for handling the different functionality of the fruit pick up
 class Fruit(Entity):
-    def __init__(self, nodes):
-        Entity.__init__(self, nodes)
+    def __init__(self, nodes, spritesheet):
+        Entity.__init__(self, nodes, spritesheet)
         self.name = "fruit"
         self.color = (0, 200, 0)
         self.setStartPosition()
@@ -13,6 +13,7 @@ class Fruit(Entity):
         self.timer = 0
         self.destroy = False
         self.points = 100
+        self.image = self.spritesheet.getImage(8, 2, 32, 32)
 
     #this method runs every second to check for the life span
     def update(self, dt):

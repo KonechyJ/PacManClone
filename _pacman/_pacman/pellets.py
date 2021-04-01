@@ -8,7 +8,7 @@ class Pellet(object):
         self.name = "pellet"
         self.position = Vector2(x, y)
         self.color = WHITE
-        self.radius = 4
+        self.radius = 2
         self.points = 10
         self.visible = True
 
@@ -16,6 +16,7 @@ class Pellet(object):
     def render(self, screen):
         if self.visible:
             p = self.position.asInt()
+            p = (int(p[0]+tileWidth/2), int(p[1]+tileWidth/2))
             pygame.draw.circle(screen, self.color, p, self.radius)
 
 #This class defines the variables and functions for the "Power up"  pellets
