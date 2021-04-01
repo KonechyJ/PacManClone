@@ -9,6 +9,7 @@ from ghosts import GhostGroup
 from fruit import Fruit
 from pauser import Pauser
 from levels import LevelController
+from text import TextGroup
 
 #class to control the game
 class GameController(object):
@@ -23,6 +24,7 @@ class GameController(object):
         self.fruit = None
         self.pause = Pauser(True)
         self.level = LevelController()
+        self.text = TextGroup()
 
     #this function fills the background with black
     def setBackground(self):
@@ -42,6 +44,9 @@ class GameController(object):
         self.fruit = None
         self.pause.force(True)
         self.gameover = False
+        self.score = 0
+        self.text.showReady()
+        self.text.updateLevel(self.level.level+1)
 
     #Function called to start a new level only after the player has cleared the current one
     def startLevel(self):
@@ -55,6 +60,8 @@ class GameController(object):
         self.pelletsEaten = 0
         self.fruit = None
         self.pause.force(True)
+        self.text.showReady()
+        self.text.updateLevel(self.level.level + 1)
 
 
     #update is called once per frame, so it will act as our game loop
@@ -75,7 +82,9 @@ class GameController(object):
 
             self.pause.update(dt)
             self.pellets.update(dt)
+            self.text.update(dt)
         self.checkEvents()
+        self.text.updateScore(self.score)
         self.render()
 
     #This functions checks for specific events to trigger something
@@ -90,6 +99,10 @@ class GameController(object):
                         self.startGame()
                     else:
                         self.pause.player()
+                        if self.pause.paused:
+                            self.text.showPause()
+                        else:
+                            self.text.hideMessages()
 
     #This method will handle will handle all the pellet events
     #we are sending the whole pellet list to pacman and he returns the pellets he collides with
@@ -97,11 +110,13 @@ class GameController(object):
         pellet = self.pacman.eatPellets(self.pellets.pelletList)
         if pellet:
             self.pelletsEaten += 1
+            self.score += pellet.points
             if (self.pelletsEaten == 70 or self.pelletsEaten == 140):
                 if self.fruit is None:
                     self.fruit = Fruit(self.nodes)
             self.pellets.pelletList.remove(pellet)
             if pellet.name == "powerpellet":
+                self.ghosts.resetPoints()
                 self.ghosts.freightMode()
             if self.pellets.isEmpty():
                 self.pacman.visible = False
@@ -115,6 +130,9 @@ class GameController(object):
         ghost = self.pacman.eatGhost(self.ghosts)
         if ghost is not None:
             if ghost.mode.name == "FREIGHT":
+                self.score += ghost.points
+                self.text.createTemp(ghost.points, ghost.position)
+                self.ghosts.updatePoints()
                 ghost.spawnMode(speed=2)
                 self.pause.startTimer(1)
                 self.pacman.visible = False
@@ -127,7 +145,11 @@ class GameController(object):
     #Checks if the fruit has been destroyed after pacman eats it or its time runs out
     def checkFruitEvents(self):
         if self.fruit is not None:
-            if self.pacman.eatFruit(self.fruit) or self.fruit.destroy:
+            if self.pacman.eatFruit(self.fruit):
+                self.score += self.fruit.points
+                self.text.createTemp(self.fruit.points, self.fruit.position)
+                self.fruit = None
+            elif self.fruit.destroy:
                 self.fruit = None
 
     # Checks to see if pacman is out of lives and then restarts the game fully
@@ -150,6 +172,7 @@ class GameController(object):
         self.ghosts = GhostGroup(self.nodes)
         self.fruit = None
         self.pause.force(True)
+        self.text.showReady()
 
     #this function will be used to draw images to the screen
     def render(self):
@@ -161,6 +184,7 @@ class GameController(object):
         self.pacman.render(self.screen)
         self.ghosts.render(self.screen)
         self.pacman.renderLives(self.screen)
+        self.text.render(self.screen)
         pygame.display.update()
 
 if __name__ == "__main__":
