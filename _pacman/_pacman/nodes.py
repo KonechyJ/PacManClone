@@ -43,7 +43,7 @@ class NodeGroup(object):
         self.homeList = []
         self.level = level
         self.nodeStack = Stack()
-        self.portalSymbols = ["1"]
+        self.portalSymbols = ["1", "2"]
         self.nodeSymbols = ["+", "H", "S", "P", "B", "I", "C", "F"] + self.portalSymbols
         self.grid = self.readMazeFile(level)
         self.homegrid = self.getHomeArray()

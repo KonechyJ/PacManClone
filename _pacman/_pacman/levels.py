@@ -4,7 +4,7 @@ class LevelController(object):
     def __init__(self):
         #current level below and all its components in a dictionary
         self.level = 0
-        self.levelmaps = {0: {"mazename": "maze1.txt", "pelletname": "pellets1.txt", "row": 0, "fruit": "cherry"}}
+        self.levelmaps = {0: {"mazename": "maze1.txt", "pelletname": "pellets1.txt", "row": 0, "fruit": "cherry"}, 1: {"mazename":"maze2.txt", "pelletname":"pellets2.txt", "row":1, "fruit":"cherry"}}
 
     #this function helps us keep track of what level we are on
     def nextLevel(self):
@@ -17,4 +17,3 @@ class LevelController(object):
     #functions tells what map to use in which level
     def getLevel(self):
         return self.levelmaps[self.level % len(self.levelmaps)]
-

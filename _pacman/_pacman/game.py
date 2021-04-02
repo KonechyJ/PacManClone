@@ -20,6 +20,7 @@ class GameController(object):
         pygame.init()
         self.screen = pygame.display.set_mode(sceenSize, 0, 32)
         self.background = None
+        self.setBackground_flash = None
         self.setBackground()
         self.clock = pygame.time.Clock()
         self.pelletsEaten = 0
@@ -29,20 +30,22 @@ class GameController(object):
         self.text = TextGroup()
         self.sheet = Spritesheet()
         self.maze = Maze(self.sheet)
+        self.flashBackground = False
 
     #this function fills the background with black
     def setBackground(self):
         self.background = pygame.surface.Surface(sceenSize).convert()
+        self.background_flash = pygame.surface.Surface(sceenSize).convert()
         self.background.fill(BLACK)
 
     #This functions starts the game
     def startGame(self):
         self.level.reset()
         levelmap = self.level.getLevel()
-        self.maze.getMaze(levelmap["mazename"].split(".")[0])
-        self.maze.constructMaze(self.background)
-        self.nodes = NodeGroup(levelmap["mazename"])
-        self.pellets = PelletGroup(levelmap["pelletname"])
+        self.maze.getMaze(levelmap["name"].split(".")[0])
+        self.maze.constructMaze(self.background, self.background_flash, levelmap["row"])
+        self.nodes = NodeGroup(levelmap["name"])
+        self.pellets = PelletGroup(levelmap["name"])
         #creates the pacman game object
         self.pacman = Pacman(self.nodes, self.sheet)
         self.ghosts = GhostGroup(self.nodes, self.sheet)
@@ -53,13 +56,17 @@ class GameController(object):
         self.score = 0
         self.text.showReady()
         self.text.updateLevel(self.level.level+1)
+        self.maze.reset()
+        self.flashBackground = False
 
     #Function called to start a new level only after the player has cleared the current one
     def startLevel(self):
         levelmap = self.level.getLevel()
         self.setBackground()
-        self.nodes = NodeGroup(levelmap["mazename"])
-        self.pellets = PelletGroup(levelmap["pelletname"])
+        self.maze.getMaze(levelmap["name"].split(".")[0])
+        self.maze.constructMaze(self.background, self.background_flash, row=levelmap["row"])
+        self.nodes = NodeGroup(levelmap["name"])
+        self.pellets = PelletGroup(levelmap["name"])
         self.pacman.nodes = self.nodes
         self.pacman.reset()
         self.ghosts = GhostGroup(self.nodes, self.sheet)
@@ -68,6 +75,8 @@ class GameController(object):
         self.pause.force(True)
         self.text.showReady()
         self.text.updateLevel(self.level.level + 1)
+        self.maze.reset()
+        self.flashBackground = False
 
 
     #update is called once per frame, so it will act as our game loop
@@ -85,11 +94,12 @@ class GameController(object):
                 self.checkPelletEvents()
                 self.checkGhostEvents()
                 self.checkFruitEvents()
-
             #condition checks to see if pacman is dead for death animation
             else:
                 if self.pacman.animateDeath:
                     self.pacman.updateDeath(dt)
+                if self.flashBackground:
+                    self.maze.flash(dt)
 
             self.pause.update(dt)
             self.pellets.update(dt)
@@ -124,7 +134,8 @@ class GameController(object):
             self.score += pellet.points
             if (self.pelletsEaten == 70 or self.pelletsEaten == 140):
                 if self.fruit is None:
-                    self.fruit = Fruit(self.nodes, self.sheet)
+                    levelmap = self.level.getLevel()
+                    self.fruit = Fruit(self.nodes, self.sheet, levelmap["fruit"])
             self.pellets.pelletList.remove(pellet)
             if pellet.name == "powerpellet":
                 self.ghosts.resetPoints()
@@ -133,6 +144,7 @@ class GameController(object):
                 self.pacman.visible = False
                 self.ghosts.hide()
                 self.pause.startTimer(3, "clear")
+                self.flashBackground = True
 
     #checks to see if pacman has hit a ghost, and if the ghost is in fright mode, then returns home at double the speed
     #now also checks to see if pacman has hit a ghost
@@ -184,10 +196,12 @@ class GameController(object):
         self.fruit = None
         self.pause.force(True)
         self.text.showReady()
+        self.maze.reset()
+        self.flashBackground = False
 
     #this function will be used to draw images to the screen
     def render(self):
-        self.screen.blit(self.background, (0, 0))
+        self.screen.blit(self.maze.background, (0, 0))
         #self.nodes.render(self.screen)
         self.pellets.render(self.screen)
         if self.fruit is not None:
