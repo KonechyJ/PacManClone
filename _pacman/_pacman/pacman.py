@@ -32,10 +32,18 @@ class Pacman(Entity):
     def reset(self):
         self.setStartPosition()
         self.image = self.startImage
+        self.animations["death"].reset()
+        self.animateDeath = False
 
     #DEcreases the number of lives after death
     def loseLife(self):
         self.lives -= 1
+        self.animation = self.animations["death"]
+        self.animatedeath = True
+
+    #updates death animation for pacman
+    def updateDeath(self, dt):
+        self.image = self.animation.update(dt)
 
     #This function draws little pacmans at the bottom to represent lives
     def renderLives(self, screen):
@@ -213,4 +221,3 @@ class Pacman(Entity):
         elif self.direction == STOP:
             self.animation = self.animations["idle"]
         self.image = self.animation.update(dt)
-

@@ -86,6 +86,11 @@ class GameController(object):
                 self.checkGhostEvents()
                 self.checkFruitEvents()
 
+            #condition checks to see if pacman is dead for death animation
+            else:
+                if self.pacman.animateDeath:
+                    self.pacman.updateDeath(dt)
+
             self.pause.update(dt)
             self.pellets.update(dt)
             self.text.update(dt)
