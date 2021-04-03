@@ -3,13 +3,13 @@ import pygame
 from vector import Vector2
 from constants import *
 
-#class declaration for any object that will inherit from this class
-class Entity(object):
+
+class MazeRunner(object):
     def __init__(self, nodes, spritesheet):
         # all the variables used in either pacman or ghost
         self.name = ""
         self.direction = STOP
-        self.speed = 100
+        self.speed = 6.25 * TILEWIDTH
         self.radius = 10
         self.collideRadius = 5
         self.color = WHITE
@@ -26,7 +26,7 @@ class Entity(object):
         self.position = self.node.position.copy()
 
     def update(self, dt):
-        self.position += self.direction*self.speed*dt
+        self.position += self.direction * self.speed * dt
         self.moveBySelf()
 
     # This function first checks to see if pacman/ghost has stopped
@@ -56,10 +56,14 @@ class Entity(object):
 
     # This function allows pacman/ghost to change dirtection at any time. Sets pacmans/ghost target to a temp for direction change
     def reverseDirection(self):
-        if self.direction is UP: self.direction = DOWN
-        elif self.direction is DOWN: self.direction = UP
-        elif self.direction is LEFT: self.direction = RIGHT
-        elif self.direction is RIGHT: self.direction = LEFT
+        if self.direction is UP:
+            self.direction = DOWN
+        elif self.direction is DOWN:
+            self.direction = UP
+        elif self.direction is LEFT:
+            self.direction = RIGHT
+        elif self.direction is RIGHT:
+            self.direction = LEFT
         temp = self.node
         self.node = self.target
         self.target = temp
@@ -70,14 +74,16 @@ class Entity(object):
             self.node = self.node.portalNode
             self.setPosition()
 
+
     # Draws pacman/ghost to the screen
     def render(self, screen):
         if self.visible:
             if self.image is not None:
                 p = self.position.asTuple()
-                p = (p[0] - tileWidth / 2, p[1] - tileWidth / 2)
+                p = (p[0] - TILEWIDTH / 2, p[1] - TILEWIDTH / 2)
                 screen.blit(self.image, p)
             else:
                 p = self.position.asInt()
                 pygame.draw.circle(screen, self.color, p, self.radius)
+
 

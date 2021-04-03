@@ -47,3 +47,7 @@ class Animation(object):
             self.nextFrame(dt)
             if self.current_frame == len(self.frames) - 1:
                 self.finished = True
+
+
+
+

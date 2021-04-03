@@ -9,23 +9,21 @@ RIGHT = Vector2(1, 0)
 STOP = Vector2()
 
 
-tileWidth = 16
-tileHeight = 16
-nRows = 36   #rows
-nCols = 28   #colums
-screenWidth = nCols*tileWidth
-screenHeight = nRows*tileHeight
-sceenSize = (screenWidth, screenHeight)
+TILEWIDTH = 16
+TILEHEIGHT = 16
+NROWS = 36    #rows
+NCOLS = 28    #colums
+SCREENWIDTH = NCOLS*TILEWIDTH
+SCREENHEIGHT = NROWS*TILEHEIGHT
+SCREENSIZE = (SCREENWIDTH, SCREENHEIGHT)
 
 #COLORS
-BLACK = (0, 0, 0)
 YELLOW = (255, 255, 0)
-WHITE = (255, 255, 255)
-RED = (255, 0, 0)
-PINK = (255, 100, 150)
-TEAL = (100, 255, 255)
-ORANGE = (230, 190, 40)
-TRANSPARENT = (255, 0, 255)
-
-
+BLACK = (0, 0, 0)
+WHITE = (255,255,255)
+RED = (255,0,0)
+PINK = (255,100,150)
+TEAL = (100,255,255)
+ORANGE = (230,190,40)
+TRANSPARENT = (255,0,255)
 

@@ -8,7 +8,7 @@ class Pellet(object):
         self.name = "pellet"
         self.position = Vector2(x, y)
         self.color = WHITE
-        self.radius = 2
+        self.radius = max(int(TILEWIDTH / 8), 1)
         self.points = 10
         self.visible = True
 
@@ -16,7 +16,7 @@ class Pellet(object):
     def render(self, screen):
         if self.visible:
             p = self.position.asInt()
-            p = (int(p[0]+tileWidth/2), int(p[1]+tileWidth/2))
+            p = (int(p[0] + TILEWIDTH / 2), int(p[1] + TILEWIDTH / 2))
             pygame.draw.circle(screen, self.color, p, self.radius)
 
 #This class defines the variables and functions for the "Power up"  pellets
@@ -38,12 +38,12 @@ class PowerPellet(Pellet):
 
 #This class will handle all the pellets in a group
 class PelletGroup(object):
-    def __init__(self, pelletfile):
+    def __init__(self, mazefile):
         self.pelletList = []
         self.powerpellets = []
-        # self.pelletSymbols = ["p", "n", "Y"]
-        # self.powerpelletSymbols = ["P", "N"]
-        self.createPelletList(pelletfile)
+        self.pelletSymbols = ["p", "n", "Y"]
+        self.powerpelletSymbols = ["P", "N"]
+        self.createPelletList(mazefile)
 
     # so for the number of powerpellts in the group, its going to call update to make them flash
     def update(self, dt):
@@ -51,24 +51,23 @@ class PelletGroup(object):
             powerpellet.update(dt)
 
     # this function creates the pellts based on the textfile that has the Pp's listed
-    def createPelletList(self, pelletfile):
-        grid = self.readPelletfile(pelletfile)
+    def createPelletList(self, mazefile):
+        grid = self.readMazeFile(mazefile)
         rows = len(grid)
         cols = len(grid[0])
         for row in range(rows):
             for col in range(cols):
-                if grid[row][col] == 'p':
-                    self.pelletList.append(Pellet(col * tileWidth, row * tileHeight))
-                elif grid[row][col] == 'P':
-                    pp = PowerPellet(col * tileWidth, row * tileHeight)
+                if (grid[row][col] in self.pelletSymbols):
+                    self.pelletList.append(Pellet(col * TILEWIDTH, row * TILEHEIGHT))
+                if (grid[row][col] in self.powerpelletSymbols):
+                    pp = PowerPellet(col * TILEWIDTH, row * TILEHEIGHT)
                     self.pelletList.append(pp)
                     self.powerpellets.append(pp)
 
     # This functions open the pellets file and reads it line for line
-    def readPelletfile(self, textfile):
+    def readMazeFile(self, textfile):
         f = open(textfile, "r")
         lines = [line.rstrip('\n') for line in f]
-        lines = [line.rstrip('\r') for line in lines]
         return [line.split(' ') for line in lines]
 
     # Returns bool if the pellet list is empty

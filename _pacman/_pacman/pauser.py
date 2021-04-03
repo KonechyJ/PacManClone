@@ -46,4 +46,3 @@ class Pauser(object):
             gamecontroller.resolveDeath()
         elif self.pauseType == "clear":
             gamecontroller.resolveLevelClear()
-
