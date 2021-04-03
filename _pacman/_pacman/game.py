@@ -20,7 +20,7 @@ class GameController(object):
         pygame.init()
         self.screen = pygame.display.set_mode(sceenSize, 0, 32)
         self.background = None
-        self.setBackground_flash = None
+        self.background_flash = None
         self.setBackground()
         self.clock = pygame.time.Clock()
         self.pelletsEaten = 0
@@ -42,10 +42,10 @@ class GameController(object):
     def startGame(self):
         self.level.reset()
         levelmap = self.level.getLevel()
-        self.maze.getMaze(levelmap["name"].split(".")[0])
-        self.maze.constructMaze(self.background, self.background_flash, levelmap["row"])
-        self.nodes = NodeGroup(levelmap["name"])
-        self.pellets = PelletGroup(levelmap["name"])
+        self.maze.getMaze(levelmap["mazename"].split(".")[0])
+        self.maze.constructMaze(self.background, self.background_flash, row=levelmap["row"])
+        self.nodes = NodeGroup(levelmap["mazename"])
+        self.pellets = PelletGroup(levelmap["pelletname"])
         #creates the pacman game object
         self.pacman = Pacman(self.nodes, self.sheet)
         self.ghosts = GhostGroup(self.nodes, self.sheet)
@@ -63,10 +63,10 @@ class GameController(object):
     def startLevel(self):
         levelmap = self.level.getLevel()
         self.setBackground()
-        self.maze.getMaze(levelmap["name"].split(".")[0])
+        self.maze.getMaze(levelmap["mazename"].split(".")[0])
         self.maze.constructMaze(self.background, self.background_flash, row=levelmap["row"])
-        self.nodes = NodeGroup(levelmap["name"])
-        self.pellets = PelletGroup(levelmap["name"])
+        self.nodes = NodeGroup(levelmap["mazename"])
+        self.pellets = PelletGroup(levelmap["pellet"])
         self.pacman.nodes = self.nodes
         self.pacman.reset()
         self.ghosts = GhostGroup(self.nodes, self.sheet)

@@ -475,5 +475,3 @@ class GhostGroup(object):
     def render(self, screen):
         for ghost in self:
             ghost.render(screen)
-
-

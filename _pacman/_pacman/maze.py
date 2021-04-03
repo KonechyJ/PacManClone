@@ -64,7 +64,7 @@ class Maze(object):
                     image = self.rotate(self.images[int(val)], int(rotVal))
                     flash_image = self.rotate(self.flash_images[int(val)], int(rotVal))
                     background.blit(image, (x, y))
-                    background_flash.blit(flash_image, (x,y))
+                    background_flash.blit(flash_image, (x, y))
 
                 if val == '=':
                     background.blit(self.images[10], (x, y))

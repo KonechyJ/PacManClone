@@ -21,6 +21,7 @@ class Pacman(Entity):
         self.animations = {}
         self.defineAnimations()
         self.lifeicons = self.spritesheet.getImage(0, 1, 32, 32)
+        self.animateDeath = False
 
     #Checks the nodes in node list, and when it finds pacmans start node, it returns it
     def findStartNode(self):
@@ -39,7 +40,7 @@ class Pacman(Entity):
     def loseLife(self):
         self.lives -= 1
         self.animation = self.animations["death"]
-        self.animatedeath = True
+        self.animateDeath = True
 
     #updates death animation for pacman
     def updateDeath(self, dt):
